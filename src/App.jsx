@@ -9,6 +9,7 @@ const App = () => {
 
   const [work, setWork] = useState("");
   const [bool, setBool] = useState(true);
+  const [updateid , setUpdateid] = useState(-1);
 
   function addTodohandler(e) {
     e.preventDefault();
@@ -21,16 +22,40 @@ const App = () => {
       work,
       status: false,
     };
-    setTodos([...todos, obj]);
-    setBool(true);
+    
+    if (updateid != -1) {
+      const index = todos.findIndex(todo => todo.id == updateid)
+      const completed = todos[index].status;
+      todos[index] = obj;
+      todos[index].status = completed;
+
+      setTodos([...todos])
+      setUpdateid(-1)
+    } else {
+      setTodos([...todos, obj]);
+    }
+
+    // setBool(true);
     setWork("");
   }
 
-
   function toggleTodoStatus(id) {
-    setTodos(todos.map(todo => 
-      todo.id === id ? { ...todo, status: !todo.status } : todo
-    ));
+    setTodos(
+      todos.map((todo) =>
+        todo.id === id ? { ...todo, status: !todo.status } : todo
+      )
+    );
+  }
+
+  function deleteTodo(id) {
+    const deletetodos = todos.filter((todo) => todo.id !== id)
+    setTodos(deletetodos)
+  }
+
+  function updatetodo(id){
+      const todotoupdate = todos.filter((todo => todo.id === id))[0]
+      setWork(todotoupdate.work)
+      setUpdateid(id)
   }
 
   return (
@@ -49,11 +74,32 @@ const App = () => {
                 onChange={() => toggleTodoStatus(todo.id)}
                 aria-label="Checkbox for following text input"
               />
-              {todo.work}
+              <span
+                className={`${
+                  todo.status ? "text-decoration-line-through" : ""
+                }`}
+              >
+                {todo.work}
+              </span>
             </div>
-            <h6>
-              <span className={`${todo.status ? "badge text-bg-secondary mt-2" : "d-none"}`}>Completed</span>
-            </h6>
+            <div className="d-flex justify-content-around align-items-center">
+              <h6>
+                <span
+                  className={`${
+                    todo.status ? "badge text-bg-secondary mt-2" : "d-none"
+                  }`}
+                >
+                  Completed
+                </span>
+              </h6>
+              <span className="badge text-bg-danger mx-2 cursor-pointer" style={{cursor : "pointer"}} onClick={() => deleteTodo(todo.id)}>
+                Delete
+              </span>
+              <span className="badge text-bg-danger mx-2 cursor-pointer" style={{cursor : "pointer"}}
+               onClick={() => updatetodo(todo.id)}>
+                Edit
+              </span>
+            </div>
           </li>
         ))}
       </ul>
@@ -76,7 +122,7 @@ const App = () => {
           style={{ marginTop: "20px" }}
           onClick={addTodohandler}
         >
-          Add
+          { updateid == -1 ? 'Add' : 'Update'}
         </button>
       </form>
     </div>
